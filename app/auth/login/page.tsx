@@ -16,9 +16,9 @@ export default function Page() {
       <section className="mx-auto max-w-sm">
         <form
           action={action}
-          className="space-y-4 rounded-md border border-dashed p-4"
+          className="space-y-3 rounded-md border border-dashed p-4"
         >
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -31,7 +31,7 @@ export default function Page() {
               <p className="text-destructive text-xs">{state.errors.email}</p>
             )}
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -46,6 +46,9 @@ export default function Page() {
               </p>
             )}
           </div>
+          {state?.message && (
+            <p className="text-destructive text-xs">{state.message}</p>
+          )}
           <Button type="submit" className="w-full">
             Login
           </Button>

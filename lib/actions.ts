@@ -1,9 +1,17 @@
 'use server';
 
 import { z } from 'zod';
+import { AuthError } from 'next-auth';
+import { PrismaClient } from '@prisma/client';
+
+import { signIn } from '@/auth';
+import { hashPassword } from '@/lib/utils';
+
+const prisma = new PrismaClient();
 
 type LoginState = {
   email?: string;
+  message?: string;
   password?: string;
   errors?: { email?: string[]; password?: string[] };
 };
@@ -11,6 +19,7 @@ type LoginState = {
 type SignupState = {
   name?: string;
   email?: string;
+  message?: string;
   password?: string;
   errors?: { name?: string[]; email?: string[]; password?: string[] };
 };
@@ -42,6 +51,28 @@ export async function login(
     };
   }
 
+  try {
+    await signIn('credentials', {
+      email,
+      password,
+      redirect: true,
+      // redirectTo: '/dashboard',
+      callbackUrl: '/dashboard'
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return { message: 'Invalid email or password.' };
+
+        default:
+          return { message: 'Something went wrong.' };
+      }
+    }
+
+    throw error;
+  }
+
   return { email, password };
 }
 
@@ -62,6 +93,21 @@ export async function signup(
       errors: result.error.flatten().fieldErrors
     };
   }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (user) {
+    return {
+      name,
+      email,
+      password,
+      message: 'Email already exist.'
+    };
+  }
+
+  await prisma.user.create({
+    data: { name, email, password: hashPassword(password) }
+  });
 
   return { name, email, password };
 }
