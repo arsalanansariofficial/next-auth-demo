@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { AuthError } from 'next-auth';
 import { PrismaClient } from '@prisma/client';
 
+
 import { signIn } from '@/auth';
 import { hashPassword } from '@/lib/utils';
 
@@ -56,8 +57,7 @@ export async function login(
       email,
       password,
       redirect: true,
-      // redirectTo: '/dashboard',
-      callbackUrl: '/dashboard'
+      redirectTo: '/dashboard'
     });
   } catch (error) {
     if (error instanceof AuthError) {
